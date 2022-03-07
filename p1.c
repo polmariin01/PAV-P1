@@ -7,9 +7,10 @@
 #include "fic_wave.h"
 
 int main(int argc, char *argv[]) {
-    float durTrm = 0.010;
+    float durTrm = 0.010, durWindow = 0.002;
     float fm, power, am, zcr;
-    int   N, L, numChannels;
+    int   N, L, numChannels, lenWind, nWind;
+    bool hamming = true;
     int   trm;
     float *x, *y; //x - left singal, y - right signal
     short *buffer;
@@ -36,6 +37,8 @@ int main(int argc, char *argv[]) {
    
     L = durTrm * fm;
     N = numChannels * L;
+    //lenWind = durTrm * fm;
+
     //printf("N - %i (datos que cojer del archivo wav)\nL - %i (duración de la ventana)\n\n", N, L);
 
     if ((buffer = malloc(N * sizeof(*buffer))) == 0 ||
@@ -49,7 +52,12 @@ int main(int argc, char *argv[]) {
         //falta pulir errors
         if ((output = fopen(argv[2], "w")) == NULL) {
             fprintf(stderr, "Error obrint l'arxiu de text %s", argv[2]);
+            return -1;
         } 
+    }
+
+    if (hamming = 1) {
+        doTheHamm(w, )
     }
 
     fprintf(output,"Trm\t\tPower\t\tAmp\t\t\tZeros\n");
