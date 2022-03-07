@@ -9,21 +9,13 @@
 int main(int argc, char *argv[]) {
     float durTrm = 0.010, durWindow = 0.002;
     float fm, power, am, zcr;
-    int   N, L, numChannels, lenWind, nWind;
-    bool hamming = true;
+    int   N, L, numChannels;
     int   trm;
-    float *x, *y; //x - left singal, y - right signal
+    float *x, *y; //x - left singal (just singal if mono), y - right signal
     short *buffer;
     FILE *fpWave;
     FILE *output;
     output = stdout;
-    
-    /*
-    printf("argc = %d\nargv[0] - %s\nargv[1] - %s\n", argc, argv[0], argv[1]);
-    
-    if (argc == 3) {
-        printf("argv[2] - %s\n", argv[2]);
-    }*/
 
     if (argc != 2 && argc != 3) { // Comprueba que el número de argumentos introducidos sea el correcto
         fprintf(stderr, "Empleo: %s inputfile [outputfile]\n", argv[0]);
@@ -34,10 +26,9 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Error al abrir el fichero WAVE de entrada %s (%s)\n", argv[1], strerror(errno));
         return -1;
     }
-   
+
     L = durTrm * fm;
     N = numChannels * L;
-    //lenWind = durTrm * fm;
 
     //printf("N - %i (datos que cojer del archivo wav)\nL - %i (duración de la ventana)\n\n", N, L);
 
@@ -49,20 +40,15 @@ int main(int argc, char *argv[]) {
 
     trm = 0;
     if (argc == 3) {
-        //falta pulir errors
         if ((output = fopen(argv[2], "w")) == NULL) {
             fprintf(stderr, "Error obrint l'arxiu de text %s", argv[2]);
             return -1;
         } 
     }
 
-    if (hamming = 1) {
-        doTheHamm(w, )
-    }
-
     fprintf(output,"Trm\t\tPower\t\tAmp\t\t\tZeros\n");
     while (lee_wave(buffer, sizeof(*buffer), N, fpWave) == N) { 
-        
+
         for (int n = 0; n < N; n++) {
             x[n] = buffer[n] / (float) (1 << 15);
             //printf("%f\t[%i]\t\t\t\t%i\t\n", x[n], n, buffer[n]);
@@ -76,41 +62,37 @@ int main(int argc, char *argv[]) {
         N equival al nombre de mostres de la finestra temporal (L) quan hi ha un canal
         i serà el doble de les mostres quan hi ha 2
         */
-        power = compute_power(x, L);
-        am = compute_am(x, L);
-        //printf("Power - %f",power);
+
+        power = compute_power(x, N, numChannels);
+        am = compute_am(x, N);
+        
+        //printf("Suma pow: %.4f\tSuma amp: %.4f", power, am);
 
         if (numChannels == 1) {
             zcr = compute_zcr(x,N,fm);
 
         } else if (numChannels == 2) {
-            for (int n = 0; n <= N/2; n++)  {
+            for (int n = 0; n < N/2; n++)  {
                 x[n] = buffer[2*n] / (float) (1 << 15);
                 y[n] = buffer[2*n+1]/ (float) (1 << 15);
                 //printf("%i/%i\t", n, N/2);
                 //printf("%f\t%i-%i\t%f\t%i-%i\t%i\t%i\t", x[n], n, 2*n, y[n], n, 2*n+1, buffer[2*n], buffer[2*n+1]);
-                //if ((buffer[2*n]*buffer[2*n+2] < 0)) printf("zero\t");
-                //if ((x[n]*x[n+1] < 0)) printf("cero");
                 //printf("\n");
             }            
             //El nombre de zeros està definit fent la mitjana de les dues
             zcr = (compute_zcr(x,L,fm) + compute_zcr(y,L,fm) ) / 2;
+            //printf("\nPower: %f\tMitjana - %f\n", power, am);
             //scanf("\n");
             //printf("%d\t%.4f\t%f\t%f\t\t%f\t%f\t%f\n", trm, compute_power(x,N), compute_am(x,N), compute_zcr(x,N,fm),
             //                                         compute_power(y,N), compute_am(y,N), compute_zcr(y,N,fm));
         }
 
         fprintf(output,"%i\t\t%.4f\t%.5f\t\t%.2f\n", trm, power, am, zcr);
- 
         trm += 1;
     }
 
     if (argc == 3) {
-        printf("aqui\n");
         fclose(output);
-        printf("aqui\n");
-        printf("Datos guardados en el documento %s\n\n", argv[2]);
-        printf("aqui\n");
     }
 
     cierra_wave(fpWave);
