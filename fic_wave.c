@@ -8,9 +8,10 @@ FILE    *abre_wave(const char *ficWave, float *fm, int *nch) {
 
     if ((fpWave = fopen(ficWave, "r")) == NULL) return NULL;
 
-    /*fseek(fpWave, 24, SEEK_SET);    // Puntero posición 24 - fm (4 bytes)
+    /* Codi antic quan només et demanava la fm
+    fseek(fpWave, 24, SEEK_SET);    // Puntero posición 24 - fm (4 bytes)
     fread(&sampleRate, 1, 4, fpWave);   // Leemos el valor de la fm
-*/
+    */
    
     fseek(fpWave, 20, SEEK_SET);
     fread(&audioFormat, 1, 2, fpWave);
@@ -39,10 +40,7 @@ FILE    *abre_wave(const char *ficWave, float *fm, int *nch) {
     return fpWave;
 }
 
-    //fseek(fpWave, 6, SEEK_CUR);
-
 size_t   lee_wave(void *x, size_t size, size_t nmemb, FILE *fpWave) {
-    //printf("Comença a llegir la merda aquesta, estem per la posició %li\n", ftell(fpWave));
     return fread(x, size, nmemb, fpWave);
 }
 
